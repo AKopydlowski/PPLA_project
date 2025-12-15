@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PPLA_project.Core.WeightBalance
 {
-    internal class WeightItem
+    public class WeightItem
     {
         public string Name { get; set; }
         public double WeightKg { get; set; }
