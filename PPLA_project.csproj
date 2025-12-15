@@ -16,7 +16,6 @@
     <Folder Include="UI\Metar\" />
     <Folder Include="UI\Vfr\" />
     <Folder Include="UI\Wind\" />
-    <Folder Include="UI\WeightBalance\" />
   </ItemGroup>
 
 </Project>
