@@ -28,7 +28,8 @@ namespace PPLA.Project.UI.Common
         public static int ReadInt(string prompt)
         {
             Console.Write(prompt);
-            while (!int.TryParse(Console.ReadLine(), out var value))
+            int value;
+            while (!int.TryParse(Console.ReadLine(), out value))
             {
                 Console.Write("Invalid value, try again: ");
             }
