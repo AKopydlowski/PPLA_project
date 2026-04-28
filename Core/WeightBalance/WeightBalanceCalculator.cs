@@ -1,10 +1,7 @@
-﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace PPLA_project.Core.WeightBalance
+namespace PPLA.Project.Core.WeightBalance
 {
     public class WeightBalanceCalculator
     {
@@ -25,10 +22,7 @@ namespace PPLA_project.Core.WeightBalance
 
         public double CenterOfGravity()
         {
-            double totalMoment =
-                (EmptyWeightKg * EmptyWeightArm) +
-                Items.Sum(i => i.Moment);
-
+            var totalMoment = (EmptyWeightKg * EmptyWeightArm) + Items.Sum(i => i.Moment);
             return totalMoment / TotalWeightKg();
         }
     }
