@@ -7,15 +7,4 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Folder Include="Core\FuelPlanning\" />
-    <Folder Include="Core\Metar\" />
-    <Folder Include="Core\Vfr\" />
-    <Folder Include="Core\Wind\" />
-    <Folder Include="UI\FuelPlanning\" />
-    <Folder Include="UI\Metar\" />
-    <Folder Include="UI\Vfr\" />
-    <Folder Include="UI\Wind\" />
-  </ItemGroup>
-
 </Project>
