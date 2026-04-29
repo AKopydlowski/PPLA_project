@@ -56,8 +56,12 @@ app.MapPost("/api/history/flight-plan", async (FlightPlanSaveInput input, IFligh
 app.MapGet("/api/history/flight-plan", async (IFlightPlanHistoryStore store) => Results.Ok(await store.GetAllAsync()));
 
 
-app.MapGet("/api/metar/live/{icao}", async (string icao, IHttpClientFactory httpClientFactory) =>
+app.MapGet("/api/metar/live/{icao}", async (string icao, IHttpClientFactory httpClientFactory, HttpContext ctx) =>
 {
+    ctx.Response.Headers.CacheControl = "no-store, no-cache, must-revalidate";
+    ctx.Response.Headers.Pragma = "no-cache";
+    ctx.Response.Headers.Expires = "0";
+
     if (string.IsNullOrWhiteSpace(icao) || icao.Length < 4)
         return Results.BadRequest(new { error = "ICAO musi mieć minimum 4 znaki." });
 
@@ -106,17 +110,17 @@ input,textarea,button{width:100%;padding:10px;border-radius:10px;border:1px soli
 </style></head><body><div class="wrap"><div class="hero"><div class="sec">PPLA Planner</div><div class="muted">Build: 2026-04-29</div></div>
 <div class="grid">
 <div class="card"><span class="badge">Fuel</span><h3>Fuel Planner</h3><p class="muted">Plan paliwa i margines rezerwy.</p>
-<div class="field"><label>Dystans (NM)</label><input id="fd" value="0"></div><div class="field"><label>TAS (kt)</label><input id="ft" value="0"></div><div class="field"><label>Wiatr (+/- kt)</label><input id="fw" value="0"></div>
-<div class="field"><label>Spalanie (L/h)</label><input id="ff" value="0"></div><div class="field"><label>Taxi fuel (L)</label><input id="fx" value="0"></div><div class="field"><label>Reserve fuel (L)</label><input id="fr" value="0"></div>
+<div class="field"><label>Dystans (NM)</label><input id="fd" value="" placeholder="0"></div><div class="field"><label>TAS (kt)</label><input id="ft" value="" placeholder="0"></div><div class="field"><label>Wiatr (+/- kt)</label><input id="fw" value="" placeholder="0"></div>
+<div class="field"><label>Spalanie (L/h)</label><input id="ff" value="" placeholder="0"></div><div class="field"><label>Taxi fuel (L)</label><input id="fx" value="" placeholder="0"></div><div class="field"><label>Reserve fuel (L)</label><input id="fr" value="" placeholder="0"></div>
 <button onclick="fuel()">Przelicz Fuel</button><div id="fuelOut" class="result"></div></div>
 
 <div class="card"><span class="badge">Wind</span><h3>Crosswind</h3><p class="muted">Składowe wiatru i limit boczny.</p>
-<div class="field"><label>Kierunek RWY (°)</label><input id="rh" value="0"></div><div class="field"><label>Kierunek wiatru (°)</label><input id="wd" value="0"></div><div class="field"><label>Prędkość wiatru (kt)</label><input id="ws" value="0"></div><div class="field"><label>Limit crosswind (kt)</label><input id="cl" value="0"></div>
+<div class="field"><label>Kierunek RWY (°)</label><input id="rh" value="" placeholder="0"></div><div class="field"><label>Kierunek wiatru (°)</label><input id="wd" value="" placeholder="0"></div><div class="field"><label>Prędkość wiatru (kt)</label><input id="ws" value="" placeholder="0"></div><div class="field"><label>Limit crosswind (kt)</label><input id="cl" value="" placeholder="0"></div>
 <button onclick="wind()">Przelicz Crosswind</button><div id="windOut" class="result"></div></div>
 
 <div class="card"><span class="badge">VFR</span><h3>VFR Leg</h3><p class="muted">Heading, WCA, GS i czas odcinka.</p>
-<div class="field"><label>True course (°)</label><input id="vc" value="0"></div><div class="field"><label>Dystans (NM)</label><input id="vd" value="0"></div><div class="field"><label>TAS (kt)</label><input id="vt" value="0"></div>
-<div class="field"><label>Wind direction (°)</label><input id="vwdir" value="0"></div><div class="field"><label>Wind speed (kt)</label><input id="vwsp" value="0"></div><div class="field"><label>Mag variation (°)</label><input id="vmag" value="0"></div>
+<div class="field"><label>True course (°)</label><input id="vc" value="" placeholder="0"></div><div class="field"><label>Dystans (NM)</label><input id="vd" value="" placeholder="0"></div><div class="field"><label>TAS (kt)</label><input id="vt" value="" placeholder="0"></div>
+<div class="field"><label>Wind direction (°)</label><input id="vwdir" value="" placeholder="0"></div><div class="field"><label>Wind speed (kt)</label><input id="vwsp" value="" placeholder="0"></div><div class="field"><label>Mag variation (°)</label><input id="vmag" value="" placeholder="0"></div>
 <button onclick="vfr()">Przelicz VFR</button><div id="vfrOut" class="result"></div></div>
 
 <div class="card"><span class="badge">METAR</span><h3>METAR</h3><p class="muted">Live NOAA + parser ręczny.</p>
@@ -127,10 +131,11 @@ input,textarea,button{width:100%;padding:10px;border-radius:10px;border:1px soli
 async function api(url,method,body){const r=await fetch(url,{method,headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});const t=await r.text();let d={};try{d=t?JSON.parse(t):{}}catch{d={raw:t}};if(!r.ok)throw new Error(d.error||d.title||d.raw||'Błąd API');return d}
 const fmt=(n,u='')=>typeof n==='number'?n.toFixed(1)+u:n;
 const paint=(id,msg,err=false)=>{const el=document.getElementById(id);el.textContent=msg;el.className='result '+(err?'err':'ok')};
-async function fuel(){try{const d=await api('/api/fuel','POST',{distanceNm:+fd.value,trueAirspeedKt:+ft.value,windComponentKt:+fw.value,fuelBurnPerHourL:+ff.value,taxiFuelL:+fx.value,reserveFuelL:+fr.value,contingencyPercent:5});paint('fuelOut',`GS: ${fmt(d.groundSpeedKt,' kt')}\nCzas: ${fmt(d.flightTimeHours,' h')}\nTrip: ${fmt(d.tripFuelL,' L')}\nContingency: ${fmt(d.contingencyFuelL,' L')}\nBlock: ${fmt(d.blockFuelL,' L')}\nRezerwa: ${d.hasReserveMargin?'OK':'BRAK'}`)}catch(e){paint('fuelOut',e.message,true)}}
-async function wind(){try{const d=await api('/api/wind','POST',{runwayHeadingDeg:+rh.value,windDirectionDeg:+wd.value,windSpeedKt:+ws.value,crosswindLimitKt:+cl.value});paint('windOut',`Headwind: ${fmt(d.headwindKt,' kt')}\nCrosswind: ${fmt(d.crosswindKt,' kt')}\nLimit: ${d.exceedsCrosswindLimit?'PRZEKROCZONY':'OK'}`)}catch(e){paint('windOut',e.message,true)}}
-async function vfr(){try{const d=await api('/api/vfr','POST',{trueCourseDeg:+vc.value,distanceNm:+vd.value,trueAirspeedKt:+vt.value,windDirectionDeg:+vwdir.value,windSpeedKt:+vwsp.value,magneticVariationDeg:+vmag.value});paint('vfrOut',`WCA: ${fmt(d.windCorrectionAngleDeg,'°')}\nTrue HDG: ${fmt(d.trueHeadingDeg,'°')}\nMag HDG: ${fmt(d.magneticHeadingDeg,'°')}\nGS: ${fmt(d.groundSpeedKt,' kt')}\nCzas: ${fmt(d.timeMinutes,' min')}`)}catch(e){paint('vfrOut',e.message,true)}}
-async function liveMetar(){try{const d=await api('/api/metar/live/'+icao.value,'GET');paint('metarOut',`Źródło: ${d.source}\nStacja: ${d.station}\nCzas: ${d.observed}\nRaw: ${d.raw}\n\nWiatr: ${d.parsed?.wind||'-'}\nWidzialność: ${d.parsed?.visibility||'-'}\nChmury: ${d.parsed?.clouds||'-'}\nQNH: ${d.parsed?.qnh||'-'}`)}catch(e){paint('metarOut',e.message,true)}}
+const num=(v)=>{const n=Number((v??'').toString().trim());return Number.isFinite(n)?n:0};
+async function fuel(){try{const d=await api('/api/fuel','POST',{distanceNm:num(fd.value),trueAirspeedKt:num(ft.value),windComponentKt:num(fw.value),fuelBurnPerHourL:num(ff.value),taxiFuelL:num(fx.value),reserveFuelL:num(fr.value),contingencyPercent:5});paint('fuelOut',`GS: ${fmt(d.groundSpeedKt,' kt')}\nCzas: ${fmt(d.flightTimeHours,' h')}\nTrip: ${fmt(d.tripFuelL,' L')}\nContingency: ${fmt(d.contingencyFuelL,' L')}\nBlock: ${fmt(d.blockFuelL,' L')}\nRezerwa: ${d.hasReserveMargin?'OK':'BRAK'}`)}catch(e){paint('fuelOut',e.message,true)}}
+async function wind(){try{const d=await api('/api/wind','POST',{runwayHeadingDeg:num(rh.value),windDirectionDeg:num(wd.value),windSpeedKt:num(ws.value),crosswindLimitKt:num(cl.value)});paint('windOut',`Headwind: ${fmt(d.headwindKt,' kt')}\nCrosswind: ${fmt(d.crosswindKt,' kt')}\nLimit: ${d.exceedsCrosswindLimit?'PRZEKROCZONY':'OK'}`)}catch(e){paint('windOut',e.message,true)}}
+async function vfr(){try{const d=await api('/api/vfr','POST',{trueCourseDeg:num(vc.value),distanceNm:num(vd.value),trueAirspeedKt:num(vt.value),windDirectionDeg:num(vwdir.value),windSpeedKt:num(vwsp.value),magneticVariationDeg:num(vmag.value)});paint('vfrOut',`WCA: ${fmt(d.windCorrectionAngleDeg,'°')}\nTrue HDG: ${fmt(d.trueHeadingDeg,'°')}\nMag HDG: ${fmt(d.magneticHeadingDeg,'°')}\nGS: ${fmt(d.groundSpeedKt,' kt')}\nCzas: ${fmt(d.timeMinutes,' min')}`)}catch(e){paint('vfrOut',e.message,true)}}
+async function liveMetar(){try{const station=(icao.value||'').trim().toUpperCase();if(!station){throw new Error('Podaj kod ICAO.')} const d=await api('/api/metar/live/'+station+'?t='+Date.now(),'GET');paint('metarOut',`Źródło: ${d.source}\nStacja: ${d.station}\nCzas: ${d.observed}\nRaw: ${d.raw}\n\nWiatr: ${d.parsed?.wind||'-'}\nWidzialność: ${d.parsed?.visibility||'-'}\nChmury: ${d.parsed?.clouds||'-'}\nQNH: ${d.parsed?.qnh||'-'}`)}catch(e){paint('metarOut',e.message,true)}}
 async function parseMetar(){try{const d=await api('/api/metar/parse','POST',{raw:raw.value});paint('rawOut',`Wiatr: ${d.wind||'-'}\nWidzialność: ${d.visibility||'-'}\nChmury: ${d.clouds||'-'}\nQNH: ${d.qnh||'-'}`)}catch(e){paint('rawOut',e.message,true)}}
 </script></body></html>
 """;
