@@ -18,3 +18,11 @@ Aplikacja konsolowa zawiera menu modułów i podstawowe narzędzia lotnicze:
 
 ## Dalszy rozwój
 Szczegółowa propozycja roadmapy: `ROADMAP_ROZWOJU.md`.
+
+
+## Web UI + API
+Domyślnie aplikacja uruchamia dashboard webowy (`dotnet run`) i udostępnia endpointy API dla modułów obliczeniowych oraz live METAR z AviationWeather (NOAA).
+
+- Strona główna: `http://localhost:5000` (lub port z logów).
+- Konsola legacy: `dotnet run -- --console`.
+- Live METAR API: `GET /api/metar/live/{ICAO}`.
