@@ -1,7 +1,9 @@
+using System.Net.Http.Json;
 using System.Text;
 using PPLA.Project.Core.FuelPlanning;
 using PPLA.Project.Core.Metar;
 using PPLA.Project.Core.Vfr;
+using PPLA.Project.Core.WeightBalance;
 using PPLA.Project.Core.Wind;
 using PPLA.Project.UI.FuelPlanning;
 using PPLA.Project.UI.Metar;
@@ -21,6 +23,7 @@ builder.Services.AddHttpClient();
 var app = builder.Build();
 
 app.MapGet("/", () => Results.Content(RenderHomePage(), "text/html", Encoding.UTF8));
+
 app.MapPost("/api/fuel", (FuelPlanInput input) => Execute(() => new FuelPlannerCalculator().Calculate(input)));
 app.MapPost("/api/wind", (WindInput input) => Execute(() => new RunwayWindCalculator().Calculate(input.RunwayHeadingDeg, input.WindDirectionDeg, input.WindSpeedKt, input.CrosswindLimitKt)));
 app.MapPost("/api/vfr", (VfrLegInput input) => Execute(() => new VfrLegCalculator().Calculate(input)));
