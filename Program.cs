@@ -79,13 +79,49 @@ app.MapGet("/api/metar/live/{icao}", async (string icao, IHttpClientFactory http
         var raw = lines[1];
         var parsed = new MetarParser().Parse(raw);
 
-        return Results.Ok(new { source = "NOAA/NWS TGFTP", station, observed, raw, parsed });
+        var nextExpectedIssueUtc = TryResolveNextMetarIssueUtc(observed, raw);
+        return Results.Ok(new { source = "NOAA/NWS TGFTP", station, observed, raw, parsed, nextExpectedIssueUtc });
     }
     catch (Exception ex)
     {
         return Results.Problem($"Błąd pobierania METAR: {ex.Message}");
     }
 });
+
+
+
+static DateTime? TryResolveNextMetarIssueUtc(string observedUtcLine, string rawMetar)
+{
+    var source = string.IsNullOrWhiteSpace(rawMetar) ? observedUtcLine : rawMetar;
+    if (string.IsNullOrWhiteSpace(source)) return null;
+
+    var token = source.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+        .FirstOrDefault(t => t.Length == 7 && t.EndsWith("Z", StringComparison.OrdinalIgnoreCase) &&
+                             int.TryParse(t[..2], out _) && int.TryParse(t.Substring(2, 2), out _) && int.TryParse(t.Substring(4, 2), out _));
+
+    if (token is null) return null;
+
+    var day = int.Parse(token[..2]);
+    var hour = int.Parse(token.Substring(2, 2));
+    var minute = int.Parse(token.Substring(4, 2));
+
+    var now = DateTime.UtcNow;
+    DateTime? issue = null;
+    foreach (var monthOffset in new[] { 0, -1, 1 })
+    {
+        var baseDate = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(monthOffset);
+        if (day > DateTime.DaysInMonth(baseDate.Year, baseDate.Month)) continue;
+
+        var candidate = new DateTime(baseDate.Year, baseDate.Month, day, hour, minute, 0, DateTimeKind.Utc);
+        if (issue is null || Math.Abs((candidate - now).TotalDays) < Math.Abs((issue.Value - now).TotalDays))
+            issue = candidate;
+    }
+
+    if (issue is null) return null;
+
+    var intervalMinutes = minute >= 30 ? 30 : 60;
+    return issue.Value.AddMinutes(intervalMinutes);
+}
 
 app.Run();
 
@@ -124,7 +160,7 @@ input,textarea,button{width:100%;padding:10px;border-radius:10px;border:1px soli
 <button onclick="vfr()">Przelicz VFR</button><div id="vfrOut" class="result"></div></div>
 
 <div class="card"><span class="badge">METAR</span><h3>METAR</h3><p class="muted">Live NOAA + parser ręczny.</p>
-<div class="field"><label>ICAO (np. EPWA)</label><input id="icao" value="" placeholder="np. EPWA"></div><button onclick="liveMetar()">Pobierz live METAR</button><div id="metarOut" class="result"></div>
+<div class="field"><label>ICAO (np. EPWA)</label><input id="icao" value="" placeholder="np. EPWA"></div><button onclick="liveMetar()">Pobierz live METAR</button><button style="margin-top:8px" onclick="toggleMetarAutoRefresh(this)">Włącz auto-odświeżanie METAR (60s)</button><div id="metarOut" class="result"></div>
 <hr style="border-color:#334155;margin:12px 0"><div class="field"><label>Ręczny METAR/TAF</label><textarea id="raw" rows="4" placeholder="Wklej METAR/TAF..."></textarea></div><button onclick="parseMetar()">Parsuj ręcznie</button><div id="rawOut" class="result"></div></div>
 </div></div>
 <script>
@@ -135,7 +171,19 @@ const num=(v)=>{const n=Number((v??'').toString().trim());return Number.isFinite
 async function fuel(){try{const d=await api('/api/fuel','POST',{distanceNm:num(fd.value),trueAirspeedKt:num(ft.value),windComponentKt:num(fw.value),fuelBurnPerHourL:num(ff.value),taxiFuelL:num(fx.value),reserveFuelL:num(fr.value),contingencyPercent:5});paint('fuelOut',`GS: ${fmt(d.groundSpeedKt,' kt')}\nCzas: ${fmt(d.flightTimeHours,' h')}\nTrip: ${fmt(d.tripFuelL,' L')}\nContingency: ${fmt(d.contingencyFuelL,' L')}\nBlock: ${fmt(d.blockFuelL,' L')}\nRezerwa: ${d.hasReserveMargin?'OK':'BRAK'}`)}catch(e){paint('fuelOut',e.message,true)}}
 async function wind(){try{const d=await api('/api/wind','POST',{runwayHeadingDeg:num(rh.value),windDirectionDeg:num(wd.value),windSpeedKt:num(ws.value),crosswindLimitKt:num(cl.value)});paint('windOut',`Headwind: ${fmt(d.headwindKt,' kt')}\nCrosswind: ${fmt(d.crosswindKt,' kt')}\nLimit: ${d.exceedsCrosswindLimit?'PRZEKROCZONY':'OK'}`)}catch(e){paint('windOut',e.message,true)}}
 async function vfr(){try{const d=await api('/api/vfr','POST',{trueCourseDeg:num(vc.value),distanceNm:num(vd.value),trueAirspeedKt:num(vt.value),windDirectionDeg:num(vwdir.value),windSpeedKt:num(vwsp.value),magneticVariationDeg:num(vmag.value)});paint('vfrOut',`WCA: ${fmt(d.windCorrectionAngleDeg,'°')}\nTrue HDG: ${fmt(d.trueHeadingDeg,'°')}\nMag HDG: ${fmt(d.magneticHeadingDeg,'°')}\nGS: ${fmt(d.groundSpeedKt,' kt')}\nCzas: ${fmt(d.timeMinutes,' min')}`)}catch(e){paint('vfrOut',e.message,true)}}
-async function liveMetar(){try{const station=(icao.value||'').trim().toUpperCase();if(!station){throw new Error('Podaj kod ICAO.')} const d=await api('/api/metar/live/'+station+'?t='+Date.now(),'GET');paint('metarOut',`Źródło: ${d.source}\nStacja: ${d.station}\nCzas: ${d.observed}\nRaw: ${d.raw}\n\nWiatr: ${d.parsed?.wind||'-'}\nWidzialność: ${d.parsed?.visibility||'-'}\nChmury: ${d.parsed?.clouds||'-'}\nQNH: ${d.parsed?.qnh||'-'}`)}catch(e){paint('metarOut',e.message,true)}}
+let metarAutoRefreshId=null;
+const nextIssueLabel=(iso)=>iso?new Date(iso).toLocaleString('pl-PL',{timeZone:'UTC',hour12:false})+' UTC':'brak danych';
+async function liveMetar(){try{const station=(icao.value||'').trim().toUpperCase();if(!station){throw new Error('Podaj kod ICAO.')} const d=await api('/api/metar/live/'+station+'?t='+Date.now(),'GET');paint('metarOut',`Źródło: ${d.source}
+Stacja: ${d.station}
+Czas obserwacji: ${d.observed}
+Kolejna spodziewana publikacja: ${nextIssueLabel(d.nextExpectedIssueUtc)}
+Raw: ${d.raw}
+
+Wiatr: ${d.parsed?.wind||'-'}
+Widzialność: ${d.parsed?.visibility||'-'}
+Chmury: ${d.parsed?.clouds||'-'}
+QNH: ${d.parsed?.qnh||'-'}`)}catch(e){paint('metarOut',e.message,true)}}
+function toggleMetarAutoRefresh(btn){if(metarAutoRefreshId){clearInterval(metarAutoRefreshId);metarAutoRefreshId=null;btn.textContent='Włącz auto-odświeżanie METAR (60s)';return;}liveMetar();metarAutoRefreshId=setInterval(liveMetar,60000);btn.textContent='Wyłącz auto-odświeżanie METAR';}
 async function parseMetar(){try{const d=await api('/api/metar/parse','POST',{raw:raw.value});paint('rawOut',`Wiatr: ${d.wind||'-'}\nWidzialność: ${d.visibility||'-'}\nChmury: ${d.clouds||'-'}\nQNH: ${d.qnh||'-'}`)}catch(e){paint('rawOut',e.message,true)}}
 </script></body></html>
 """;
