@@ -29,6 +29,7 @@ builder.Services.AddSingleton<IFlightPlanHistoryStore, FileFlightPlanHistoryStor
 var app = builder.Build();
 
 app.MapGet("/", () => Results.Content(RenderHomePage(), "text/html", Encoding.UTF8));
+app.MapGet("/favicon.ico", () => Results.NoContent());
 
 app.MapPost("/api/fuel", (FuelPlanInput input) => Execute(() => new FuelPlannerCalculator().Calculate(input)));
 app.MapPost("/api/wind", (WindInput input) => Execute(() => new RunwayWindCalculator().Calculate(input.RunwayHeadingDeg, input.WindDirectionDeg, input.WindSpeedKt, input.CrosswindLimitKt)));
