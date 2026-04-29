@@ -16,10 +16,6 @@ Aplikacja konsolowa zawiera menu modułów i podstawowe narzędzia lotnicze:
 2. Uruchom aplikację: `dotnet run`
 3. Wybierz moduł z menu głównego.
 
-## Dalszy rozwój
-Szczegółowa propozycja roadmapy: `ROADMAP_ROZWOJU.md`.
-
-
 ## Web UI + API
 Domyślnie aplikacja uruchamia dashboard webowy (`dotnet run`) i udostępnia endpointy API dla modułów obliczeniowych oraz live METAR z AviationWeather (NOAA).
 
@@ -32,3 +28,7 @@ Domyślnie aplikacja uruchamia dashboard webowy (`dotnet run`) i udostępnia end
 - `POST /api/metar/v2/parse` — parser METAR/TAF v2 (tokenizer + walidator + plain language PL).
 - `POST /api/history/flight-plan` i `GET /api/history/flight-plan` — zapis i historia planów lotu (audit trail).
 - Profile: samolotu i pilota używane w scenariuszach.
+
+
+## Ważne zastrzeżenie bezpieczeństwa
+Aplikacja ma **wyłącznie charakter edukacyjny i treningowy**. Wyniki kalkulatorów (paliwo, wiatr, VFR, W&B, METAR/TAF) mogą zawierać uproszczenia oraz błędy statystyczne/numeryczne, dlatego **nie mogą być jedyną podstawą decyzji operacyjnych**. Nie używaj tej aplikacji jako jedynego źródła do planowania i wykonywania rzeczywistych lotów. Zawsze weryfikuj dane i decyzje zgodnie z oficjalnymi procedurami lotniczymi, aktualnymi publikacjami i z instruktorem/operatorem.
