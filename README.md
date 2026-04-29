@@ -32,3 +32,9 @@ Domyślnie aplikacja uruchamia dashboard webowy (`dotnet run`) i udostępnia end
 
 ## Ważne zastrzeżenie bezpieczeństwa
 Aplikacja ma **wyłącznie charakter edukacyjny i treningowy**. Wyniki kalkulatorów (paliwo, wiatr, VFR, W&B, METAR/TAF) mogą zawierać uproszczenia oraz błędy statystyczne/numeryczne, dlatego **nie mogą być jedyną podstawą decyzji operacyjnych**. Nie używaj tej aplikacji jako jedynego źródła do planowania i wykonywania rzeczywistych lotów. Zawsze weryfikuj dane i decyzje zgodnie z oficjalnymi procedurami lotniczymi, aktualnymi publikacjami i z instruktorem/operatorem.
+
+
+### Uruchamianie w Visual Studio
+- Wybierz profil startowy **PPLA_project** (web) aby VS automatycznie otworzył przeglądarkę.
+- Jeśli przeglądarka się nie otworzy, wejdź ręcznie na: `http://localhost:5000`.
+- Profil **PPLA_project (console)** uruchamia tryb tekstowy (`--console`) bez strony WWW.
