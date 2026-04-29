@@ -26,3 +26,9 @@ Domyślnie aplikacja uruchamia dashboard webowy (`dotnet run`) i udostępnia end
 - Strona główna: `http://localhost:5000` (lub port z logów).
 - Konsola legacy: `dotnet run -- --console`.
 - Live METAR API: `GET /api/metar/live/{ICAO}`.
+
+## Nowe moduły (2026)
+- `POST /api/scenario/go-no-go` — decyzja GO/NO-GO z naruszeniami i rekomendacjami.
+- `POST /api/metar/v2/parse` — parser METAR/TAF v2 (tokenizer + walidator + plain language PL).
+- `POST /api/history/flight-plan` i `GET /api/history/flight-plan` — zapis i historia planów lotu (audit trail).
+- Profile: samolotu i pilota używane w scenariuszach.
