@@ -100,22 +100,22 @@ input,textarea,button{width:100%;padding:10px;border-radius:10px;border:1px soli
 </style></head><body><div class="wrap"><div class="hero"><div class="sec">PPLA Planner</div></div>
 <div class="grid">
 <div class="card"><span class="badge">Fuel</span><h3>Fuel Planner</h3><p class="muted">Plan paliwa i margines rezerwy.</p>
-<div class="field"><label>Dystans (NM)</label><input id="fd" value="120"></div><div class="field"><label>TAS (kt)</label><input id="ft" value="105"></div><div class="field"><label>Wiatr (+/- kt)</label><input id="fw" value="-10"></div>
-<div class="field"><label>Spalanie (L/h)</label><input id="ff" value="24"></div><div class="field"><label>Taxi fuel (L)</label><input id="fx" value="3"></div><div class="field"><label>Reserve fuel (L)</label><input id="fr" value="12"></div>
+<div class="field"><label>Dystans (NM)</label><input id="fd" value="0"></div><div class="field"><label>TAS (kt)</label><input id="ft" value="0"></div><div class="field"><label>Wiatr (+/- kt)</label><input id="fw" value="0"></div>
+<div class="field"><label>Spalanie (L/h)</label><input id="ff" value="0"></div><div class="field"><label>Taxi fuel (L)</label><input id="fx" value="0"></div><div class="field"><label>Reserve fuel (L)</label><input id="fr" value="0"></div>
 <button onclick="fuel()">Przelicz Fuel</button><div id="fuelOut" class="result"></div></div>
 
 <div class="card"><span class="badge">Wind</span><h3>Crosswind</h3><p class="muted">Składowe wiatru i limit boczny.</p>
-<div class="field"><label>Kierunek RWY (°)</label><input id="rh" value="270"></div><div class="field"><label>Kierunek wiatru (°)</label><input id="wd" value="230"></div><div class="field"><label>Prędkość wiatru (kt)</label><input id="ws" value="18"></div><div class="field"><label>Limit crosswind (kt)</label><input id="cl" value="15"></div>
+<div class="field"><label>Kierunek RWY (°)</label><input id="rh" value="0"></div><div class="field"><label>Kierunek wiatru (°)</label><input id="wd" value="0"></div><div class="field"><label>Prędkość wiatru (kt)</label><input id="ws" value="0"></div><div class="field"><label>Limit crosswind (kt)</label><input id="cl" value="0"></div>
 <button onclick="wind()">Przelicz Crosswind</button><div id="windOut" class="result"></div></div>
 
 <div class="card"><span class="badge">VFR</span><h3>VFR Leg</h3><p class="muted">Heading, WCA, GS i czas odcinka.</p>
-<div class="field"><label>True course (°)</label><input id="vc" value="210"></div><div class="field"><label>Dystans (NM)</label><input id="vd" value="75"></div><div class="field"><label>TAS (kt)</label><input id="vt" value="102"></div>
-<div class="field"><label>Wind direction (°)</label><input id="vwdir" value="250"></div><div class="field"><label>Wind speed (kt)</label><input id="vwsp" value="20"></div><div class="field"><label>Mag variation (°)</label><input id="vmag" value="4"></div>
+<div class="field"><label>True course (°)</label><input id="vc" value="0"></div><div class="field"><label>Dystans (NM)</label><input id="vd" value="0"></div><div class="field"><label>TAS (kt)</label><input id="vt" value="0"></div>
+<div class="field"><label>Wind direction (°)</label><input id="vwdir" value="0"></div><div class="field"><label>Wind speed (kt)</label><input id="vwsp" value="0"></div><div class="field"><label>Mag variation (°)</label><input id="vmag" value="0"></div>
 <button onclick="vfr()">Przelicz VFR</button><div id="vfrOut" class="result"></div></div>
 
 <div class="card"><span class="badge">METAR</span><h3>METAR</h3><p class="muted">Live NOAA + parser ręczny.</p>
-<div class="field"><label>ICAO (np. EPWA)</label><input id="icao" value="EPWA"></div><button onclick="liveMetar()">Pobierz live METAR</button><div id="metarOut" class="result"></div>
-<hr style="border-color:#334155;margin:12px 0"><div class="field"><label>Ręczny METAR/TAF</label><textarea id="raw" rows="4">METAR EPWA 291200Z 23012KT 9999 SCT030 Q1013</textarea></div><button onclick="parseMetar()">Parsuj ręcznie</button><div id="rawOut" class="result"></div></div>
+<div class="field"><label>ICAO (np. EPWA)</label><input id="icao" value="" placeholder="np. EPWA"></div><button onclick="liveMetar()">Pobierz live METAR</button><div id="metarOut" class="result"></div>
+<hr style="border-color:#334155;margin:12px 0"><div class="field"><label>Ręczny METAR/TAF</label><textarea id="raw" rows="4" placeholder="Wklej METAR/TAF..."></textarea></div><button onclick="parseMetar()">Parsuj ręcznie</button><div id="rawOut" class="result"></div></div>
 </div></div>
 <script>
 async function api(url,method,body){const r=await fetch(url,{method,headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});const t=await r.text();let d={};try{d=t?JSON.parse(t):{}}catch{d={raw:t}};if(!r.ok)throw new Error(d.error||d.title||d.raw||'Błąd API');return d}
