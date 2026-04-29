@@ -3,7 +3,6 @@ using System.Text;
 using PPLA.Project.Core.FuelPlanning;
 using PPLA.Project.Core.Metar;
 using PPLA.Project.Core.Vfr;
-using PPLA.Project.Core.WeightBalance;
 using PPLA.Project.Core.Wind;
 using PPLA.Project.UI.FuelPlanning;
 using PPLA.Project.UI.Metar;
