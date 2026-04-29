@@ -1,6 +1,11 @@
 using System.Net.Http.Json;
 using System.Text;
 using PPLA.Project.Core.FuelPlanning;
+using PPLA.Project.Core.Decision;
+using PPLA.Project.Core.History;
+using PPLA.Project.Core.MetarV2;
+using PPLA.Project.Core.Profiles;
+using PPLA.Project.Infrastructure.History;
 using PPLA.Project.Core.Metar;
 using PPLA.Project.Core.Vfr;
 using PPLA.Project.Core.WeightBalance;
@@ -20,6 +25,7 @@ if (runConsole)
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHttpClient();
+builder.Services.AddSingleton<IFlightPlanHistoryStore, FileFlightPlanHistoryStore>();
 var app = builder.Build();
 
 app.MapGet("/", () => Results.Content(RenderHomePage(), "text/html", Encoding.UTF8));
@@ -28,6 +34,20 @@ app.MapPost("/api/fuel", (FuelPlanInput input) => Execute(() => new FuelPlannerC
 app.MapPost("/api/wind", (WindInput input) => Execute(() => new RunwayWindCalculator().Calculate(input.RunwayHeadingDeg, input.WindDirectionDeg, input.WindSpeedKt, input.CrosswindLimitKt)));
 app.MapPost("/api/vfr", (VfrLegInput input) => Execute(() => new VfrLegCalculator().Calculate(input)));
 app.MapPost("/api/metar/parse", (MetarRawInput input) => Execute(() => new MetarParser().Parse(input.Raw)));
+
+app.MapPost("/api/metar/v2/parse", (MetarRawInput input) => Execute(() => new MetarV2Parser().Parse(input.Raw)));
+
+app.MapPost("/api/scenario/go-no-go", (FlightScenarioInput input) => Execute(() => new FlightScenarioCalculator().Evaluate(input)));
+
+app.MapPost("/api/history/flight-plan", async (FlightPlanSaveInput input, IFlightPlanHistoryStore store) =>
+{
+    var record = new FlightPlanRecord(Guid.NewGuid().ToString("N"), DateTime.UtcNow, input.ScenarioName, input.PlannedFuelL, input.ActualFuelL, input.PlannedTimeMin, input.ActualTimeMin, input.AuditTrail);
+    await store.SaveAsync(record);
+    return Results.Ok(record);
+});
+
+app.MapGet("/api/history/flight-plan", async (IFlightPlanHistoryStore store) => Results.Ok(await store.GetAllAsync()));
+
 
 app.MapGet("/api/metar/live/{icao}", async (string icao, IHttpClientFactory httpClientFactory) =>
 {
@@ -152,3 +172,8 @@ static void RunConsole()
 
 record WindInput(int RunwayHeadingDeg, int WindDirectionDeg, double WindSpeedKt, double CrosswindLimitKt);
 record MetarRawInput(string Raw);
+
+record FlightPlanSaveInput(string ScenarioName, double PlannedFuelL, double ActualFuelL, double PlannedTimeMin, double ActualTimeMin, List<string> AuditTrail);
+
+public partial class Program { }
+

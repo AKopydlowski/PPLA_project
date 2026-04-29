@@ -5,6 +5,8 @@ VisualStudioVersion = 17.14.36717.8 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PPLA_project", "PPLA_project.csproj", "{53F78082-9800-4ED1-A94A-6FC22B306616}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PPLA_project.Tests", "PPLA_project.Tests\PPLA_project.Tests.csproj", "{A1111111-2222-4333-8444-555555555555}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{53F78082-9800-4ED1-A94A-6FC22B306616}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{53F78082-9800-4ED1-A94A-6FC22B306616}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{53F78082-9800-4ED1-A94A-6FC22B306616}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1111111-2222-4333-8444-555555555555}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1111111-2222-4333-8444-555555555555}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1111111-2222-4333-8444-555555555555}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1111111-2222-4333-8444-555555555555}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

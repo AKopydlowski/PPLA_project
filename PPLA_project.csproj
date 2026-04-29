@@ -7,4 +7,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="PPLA_project.Tests/**/*.cs" />
+    <None Remove="PPLA_project.Tests/**/*.cs" />
+    <EmbeddedResource Remove="PPLA_project.Tests/**/*.cs" />
+  </ItemGroup>
+
 </Project>
