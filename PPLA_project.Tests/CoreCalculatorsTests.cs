@@ -1,3 +1,4 @@
+using Xunit;
 using FluentAssertions;
 using PPLA.Project.Core.FuelPlanning;
 using PPLA.Project.Core.Vfr;

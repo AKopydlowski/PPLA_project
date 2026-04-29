@@ -8,9 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="PPLA_project.Tests/**/*.cs" />
-    <None Remove="PPLA_project.Tests/**/*.cs" />
-    <EmbeddedResource Remove="PPLA_project.Tests/**/*.cs" />
+    <Compile Remove="PPLA_project.Tests/**" />
+    <None Remove="PPLA_project.Tests/**" />
+    <EmbeddedResource Remove="PPLA_project.Tests/**" />
   </ItemGroup>
 
 </Project>
