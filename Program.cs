@@ -28,7 +28,13 @@ builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IFlightPlanHistoryStore, FileFlightPlanHistoryStore>();
 var app = builder.Build();
 
-app.MapGet("/", () => Results.Content(RenderHomePage(), "text/html", Encoding.UTF8));
+app.MapGet("/", (HttpContext ctx) =>
+{
+    ctx.Response.Headers.CacheControl = "no-store, no-cache, must-revalidate";
+    ctx.Response.Headers.Pragma = "no-cache";
+    ctx.Response.Headers.Expires = "0";
+    return Results.Content(RenderHomePage(), "text/html", Encoding.UTF8);
+});
 app.MapGet("/favicon.ico", () => Results.NoContent());
 
 app.MapPost("/api/fuel", (FuelPlanInput input) => Execute(() => new FuelPlannerCalculator().Calculate(input)));
@@ -97,7 +103,7 @@ static string RenderHomePage() => """
 input,textarea,button{width:100%;padding:10px;border-radius:10px;border:1px solid #334155;background:#020617;color:var(--txt)}button{cursor:pointer;background:var(--acc);border:none;font-weight:700}
 .result{margin-top:10px;min-height:90px;padding:10px;border-radius:10px;background:#020617;white-space:pre-wrap;border-left:4px solid #334155}.result.ok{border-left-color:var(--ok)}.result.err{border-left-color:var(--bad)}
 .badge{display:inline-block;font-size:12px;padding:4px 8px;border-radius:20px;background:#1d4ed8;margin-bottom:8px}
-</style></head><body><div class="wrap"><div class="hero"><div class="sec">PPLA Planner</div></div>
+</style></head><body><div class="wrap"><div class="hero"><div class="sec">PPLA Planner</div><div class="muted">Build: 2026-04-29</div></div>
 <div class="grid">
 <div class="card"><span class="badge">Fuel</span><h3>Fuel Planner</h3><p class="muted">Plan paliwa i margines rezerwy.</p>
 <div class="field"><label>Dystans (NM)</label><input id="fd" value="0"></div><div class="field"><label>TAS (kt)</label><input id="ft" value="0"></div><div class="field"><label>Wiatr (+/- kt)</label><input id="fw" value="0"></div>
